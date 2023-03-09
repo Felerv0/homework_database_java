@@ -66,7 +66,7 @@ public class MainActivity extends AppCompatActivity {
                         et_email.getText().toString()
                 );
                 studentDao.insert(student);
-                //refreshData();
+                refreshData();
             }
         });
 
@@ -82,8 +82,6 @@ public class MainActivity extends AppCompatActivity {
                 Student student = studentList.get(position);
                 if (direction == ItemTouchHelper.LEFT) {
                     studentDao.deleteById(student.getId());
-                    studentList.clear();
-                    studentList.addAll(studentDao.findAll());
                     refreshData();
                 }
             }
@@ -95,6 +93,8 @@ public class MainActivity extends AppCompatActivity {
 
     @SuppressLint("NotifyDataSetChanged")
     private void refreshData() {
+        studentList.clear();
+        studentList.addAll(studentDao.findAll());
         adapter.notifyDataSetChanged();
     }
 }
