@@ -9,6 +9,6 @@ public interface StudentDao {
     List<Student> findAll();
     Student findById(long id);
     int update(long id, Student student);
-    int deleteById(int id);
+    int deleteById(long id);
 
 }

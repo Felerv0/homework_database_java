@@ -1,7 +1,9 @@
 package com.example.databasetest;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.AppCompatButton;
+import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.annotation.SuppressLint;
@@ -15,6 +17,8 @@ import com.example.databasetest.dao.StudentDao;
 import com.example.databasetest.dao.StudentDaoSqlite;
 import com.example.databasetest.model.Student;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 public class MainActivity extends AppCompatActivity {
@@ -25,8 +29,12 @@ public class MainActivity extends AppCompatActivity {
     private EditText et_email;
     private AppCompatButton btn_add;
     private RecyclerView rv;
+
+    private final List<Student> studentList = new ArrayList<>();
+
     private StudentDao studentDao;
     private StudentAdapter adapter;
+    private ItemTouchHelper.SimpleCallback simpleItemTouchCallback;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,8 +44,10 @@ public class MainActivity extends AppCompatActivity {
 
         studentDao = new StudentDaoSqlite(this);
 
+        studentList.addAll(studentDao.findAll());
+
         rv = findViewById(R.id.rv_student);
-        adapter = new StudentAdapter(studentDao.findAll(), LayoutInflater.from(this));
+        adapter = new StudentAdapter(studentList, LayoutInflater.from(this));
         rv.setAdapter(adapter);
 
         et_name = findViewById(R.id.et_name);
@@ -59,6 +69,28 @@ public class MainActivity extends AppCompatActivity {
                 //refreshData();
             }
         });
+
+        simpleItemTouchCallback = new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
+            @Override
+            public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
+                return false;
+            }
+
+            @Override
+            public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
+                int position = viewHolder.getAdapterPosition();
+                Student student = studentList.get(position);
+                if (direction == ItemTouchHelper.LEFT) {
+                    studentDao.deleteById(student.getId());
+                    studentList.clear();
+                    studentList.addAll(studentDao.findAll());
+                    refreshData();
+                }
+            }
+        };
+
+        ItemTouchHelper itemTouchHelper = new ItemTouchHelper(simpleItemTouchCallback);
+        itemTouchHelper.attachToRecyclerView(rv);
     }
 
     @SuppressLint("NotifyDataSetChanged")

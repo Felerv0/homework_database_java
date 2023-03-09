@@ -82,31 +82,27 @@ public class StudentDaoSqlite implements StudentDao{
         Cursor cursor = sqLiteDatabase.query(
                 StudentReaderContract.DATABASE_NAME,
                 null,
-                null,
-                null,
+                StudentReaderContract.StudentEntry.COLUMN_ID + " = ?",
+                new String[]{String.valueOf(id)},
                 null,
                 null,
                 null
         );
         if (cursor.moveToFirst()) {
-            int id_column = cursor.getColumnIndex(StudentReaderContract.StudentEntry.COLUMN_ID);
-            long current_id = cursor.getLong(id_column);
-            if (current_id == id) {
-                int name = cursor.getColumnIndex(StudentReaderContract.StudentEntry.COLUMN_NAME);
-                int age = cursor.getColumnIndex(StudentReaderContract.StudentEntry.COLUMN_AGE);
-                int phone = cursor.getColumnIndex(StudentReaderContract.StudentEntry.COLUMN_PHONE);
-                int email = cursor.getColumnIndex(StudentReaderContract.StudentEntry.COLUMN_EMAIL);
-                Student student = new Student(
-                        current_id,
-                        cursor.getString(name),
-                        cursor.getInt(age),
-                        cursor.getString(phone),
-                        cursor.getString(email)
-                );
-                cursor.close();
-                sqLiteDatabase.close();
-                return student;
-            }
+            int name = cursor.getColumnIndex(StudentReaderContract.StudentEntry.COLUMN_NAME);
+            int age = cursor.getColumnIndex(StudentReaderContract.StudentEntry.COLUMN_AGE);
+            int phone = cursor.getColumnIndex(StudentReaderContract.StudentEntry.COLUMN_PHONE);
+            int email = cursor.getColumnIndex(StudentReaderContract.StudentEntry.COLUMN_EMAIL);
+            Student student = new Student(
+                    id,
+                    cursor.getString(name),
+                    cursor.getInt(age),
+                    cursor.getString(phone),
+                    cursor.getString(email)
+            );
+            cursor.close();
+            sqLiteDatabase.close();
+            return student;
         }
         cursor.close();
         sqLiteDatabase.close();
@@ -122,25 +118,25 @@ public class StudentDaoSqlite implements StudentDao{
         contentValues.put(StudentReaderContract.StudentEntry.COLUMN_AGE, student.getAge());
         contentValues.put(StudentReaderContract.StudentEntry.COLUMN_PHONE, student.getPhone());
         contentValues.put(StudentReaderContract.StudentEntry.COLUMN_EMAIL, student.getEmail());
-        sqLiteDatabase.update(
-                StudentReaderContract.DATABASE_NAME,
+        int cnt = sqLiteDatabase.update(
+                StudentReaderContract.StudentEntry.TABLE_NAME,
                 contentValues,
-                "_id = ?",
+                StudentReaderContract.StudentEntry.COLUMN_ID + " = ?",
                 new String[]{String.valueOf(student.getId())}
         );
         sqLiteDatabase.close();
-        return 0;
+        return cnt;
     }
 
     @Override
-    public int deleteById(int id) {
+    public int deleteById(long id) {
         SQLiteDatabase sqLiteDatabase = openHelper.getWritableDatabase();
-        sqLiteDatabase.delete(
-                StudentReaderContract.DATABASE_NAME,
-                "_id = ?",
+        int cnt = sqLiteDatabase.delete(
+                StudentReaderContract.StudentEntry.TABLE_NAME,
+                StudentReaderContract.StudentEntry.COLUMN_ID + " = ?",
                 new String[]{String.valueOf(id)}
                 );
         sqLiteDatabase.close();
-        return 0;
+        return cnt;
     }
 }
